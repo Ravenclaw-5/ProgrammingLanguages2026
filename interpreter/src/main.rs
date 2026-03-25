@@ -3,28 +3,28 @@ pub enum Expression {
     Add(Vec<Expression>),
     Multiply(Vec<Expression>),
     Subtract(Vec<Expression>),
-    Number(i32),
+    Number(f64),
 }
 
-pub fn evaluate_addition(add: &Expression) -> i32 {
+pub fn evaluate_addition(add: &Expression) -> f64 {
     if let Expression::Add(expressions) = add {
         let iter = expressions.iter();
-        iter.fold(0, |total, next| total + evaluate(next))
+        iter.fold(0.0, |total, next| total + evaluate(next))
     } else {
         panic!("Addition not provided");
     }
 }
 
-pub fn evaluate_multiplication(mult: &Expression) -> i32 {
+pub fn evaluate_multiplication(mult: &Expression) -> f64 {
     if let Expression::Multiply(expressions) = mult {
         let iter = expressions.iter();
-        iter.fold(1, |total, next| total * evaluate(next))
+        iter.fold(1.0, |total, next| total * evaluate(next))
     } else {
         panic!("Multiplication not provided");
     }
 }
 
-pub fn evaluate_subtraction(sub: &Expression) -> i32 {
+pub fn evaluate_subtraction(sub: &Expression) -> f64 {
     if let Expression::Subtract(expressions) = sub {
         let mut iter = expressions.iter();
         let first = iter.next().unwrap();
@@ -34,7 +34,7 @@ pub fn evaluate_subtraction(sub: &Expression) -> i32 {
     }
 }
 
-fn evaluate(expression: &Expression) -> i32 {
+fn evaluate(expression: &Expression) -> f64 {
     match expression {
         Expression::Add(_) => evaluate_addition(expression),
         Expression::Multiply(_) => evaluate_multiplication(expression),
@@ -45,18 +45,18 @@ fn evaluate(expression: &Expression) -> i32 {
 
 fn main() {
     let mut expressions = Vec::new();
-    expressions.push(Expression::Number(3));
-    expressions.push(Expression::Number(4));
-    expressions.push(Expression::Number(5));
+    expressions.push(Expression::Number(3.0));
+    expressions.push(Expression::Number(4.0));
+    expressions.push(Expression::Number(5.0));
     let add = Expression::Add(expressions);
-    let multiply = Expression::Multiply(vec![add, Expression::Number(2)]);
+    let multiply = Expression::Multiply(vec![add, Expression::Number(2.0)]);
     let result = evaluate(&multiply);
     println!("The result is {result}");
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{Expression, evaluate_addition, evaluate_subtraction};
+    use crate::{Expression, evaluate_addition, evaluate_multiplication, evaluate_subtraction};
 
     #[test]
     fn it_works() {
@@ -66,36 +66,56 @@ mod tests {
     #[test]
     fn test_basic_addition() {
         // arrange
-        let values = vec![Expression::Number(2), Expression::Number(2)];
+        let values = vec![Expression::Number(2.0), Expression::Number(2.0)];
 
         // act
         let sum = evaluate_addition(&Expression::Add(values));
 
         // assert
-        assert_eq!(sum, 4);
+        assert_eq!(sum, 4.0);
     }
 
     #[test]
     fn test_basic_addition_not5() {
         // arrange
-        let values = vec![Expression::Number(2), Expression::Number(2)];
+        let values = vec![Expression::Number(2.0), Expression::Number(2.0)];
 
         // act
         let sum = evaluate_addition(&Expression::Add(values));
 
         // assert
-        assert_ne!(sum, 5);
+        assert_ne!(sum, 5.0);
     }
 
     #[test]
     fn test_basic_subtraction() {
         // arrange
-        let values = vec![Expression::Number(2), Expression::Number(2)];
+        let values = vec![Expression::Number(2.0), Expression::Number(2.0)];
 
         // act
         let difference = evaluate_subtraction(&Expression::Subtract(values));
 
         // assert
-        assert_eq!(difference, 0);
+        assert_eq!(difference, 0.0);
+    }
+
+    #[test]
+    fn homework_test() {
+        // arrange
+        let values = vec![
+            Expression::Number(3.0),
+            Expression::Number(4.0),
+            Expression::Number(5.0),
+            Expression::Number(evaluate_addition(&Expression::Add(vec![
+                Expression::Number(2.0),
+                Expression::Number(2.0),
+            ]))),
+        ];
+
+        // act
+        let result = evaluate_multiplication(&Expression::Multiply(values));
+
+        // assert
+        assert_eq!(result, 240.0);
     }
 }
