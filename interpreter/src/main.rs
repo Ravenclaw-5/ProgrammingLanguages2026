@@ -3,6 +3,7 @@ pub enum Expression {
     Add(Vec<Expression>),
     Multiply(Vec<Expression>),
     Subtract(Vec<Expression>),
+    Divide(Vec<Expression>),
     Variable(String),
     Number(f64),
 }
@@ -59,11 +60,24 @@ pub fn evaluate_subtraction(sub: &Expression, environment: &Environment) -> f64 
     }
 }
 
+pub fn evaluate_division(div: &Expression, environment: &Environment) -> f64 {
+    if let Expression::Divide(expressions) = div {
+        let mut iter = expressions.iter();
+        let first = iter.next().unwrap();
+        iter.fold(evaluate(first, environment), |total, next| {
+            total / evaluate(next, environment)
+        })
+    } else {
+        panic!("Division not provided");
+    }
+}
+
 fn evaluate(expression: &Expression, environment: &Environment) -> f64 {
     match expression {
         Expression::Add(_) => evaluate_addition(expression, environment),
         Expression::Multiply(_) => evaluate_multiplication(expression, environment),
         Expression::Subtract(_) => evaluate_subtraction(expression, environment),
+        Expression::Divide(_) => evaluate_division(expression, environment),
         Expression::Variable(key) => {
             let expr = environment.value_for_key(key);
             evaluate(expr, environment)
@@ -86,7 +100,8 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Environment, Expression, evaluate_addition, evaluate_multiplication, evaluate_subtraction,
+        Environment, Expression, evaluate_addition, evaluate_division, evaluate_multiplication,
+        evaluate_subtraction,
     };
 
     #[test]
@@ -202,5 +217,17 @@ mod tests {
 
         // assert
         assert_eq!(value, 7.0)
+    }
+
+    #[test]
+    fn test_division() {
+        // arrange
+        let values = vec![Expression::Number(2.0), Expression::Number(2.0)];
+
+        // act
+        let dividend = evaluate_division(&Expression::Divide(values), &Environment::new());
+
+        // assert
+        assert_eq!(dividend, 1.0);
     }
 }
