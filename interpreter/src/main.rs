@@ -21,7 +21,6 @@ impl Environment {
             panic!("Key not found in environment");
         }
     }
-
     fn new() -> Environment {
         Environment {
             key: String::from(""),
@@ -86,6 +85,74 @@ fn evaluate(expression: &Expression, environment: &Environment) -> f64 {
     }
 }
 
+pub fn print_addition(add: &Expression, environment: &Environment) {
+    if let Expression::Add(expressions) = add {
+        print!("(+ ");
+        for expr in expressions.iter() {
+            print_expression(&expr, environment);
+        }
+        print!(")");
+    } else {
+        panic!("Addition not provided!");
+    }
+}
+
+pub fn print_multiplication(mult: &Expression, environment: &Environment) {
+    if let Expression::Multiply(expressions) = mult {
+        print!("(* ");
+        for expr in expressions.iter() {
+            print_expression(&expr, environment);
+        }
+        print!(")");
+    } else {
+        panic!("Multiplication not provided!");
+    }
+}
+
+pub fn print_subtraction(sub: &Expression, environment: &Environment) {
+    if let Expression::Subtract(expressions) = sub {
+        print!("(- ");
+        for expr in expressions.iter() {
+            print_expression(&expr, environment);
+        }
+        print!(")")
+    } else {
+        panic!("Subtraction not provided!");
+    }
+}
+
+pub fn print_division(div: &Expression, environment: &Environment) {
+    if let Expression::Divide(expressions) = div {
+        print!("(/ ");
+        for expr in expressions.iter() {
+            print_expression(&expr, environment);
+        }
+        print!(")");
+    } else {
+        panic!("Division not provided!");
+    }
+}
+
+fn print_expression(expression: &Expression, environment: &Environment) {
+    match expression {
+        Expression::Add(_) => print_addition(expression, environment),
+        Expression::Multiply(_) => print_multiplication(expression, environment),
+        Expression::Subtract(_) => print_subtraction(expression, environment),
+        Expression::Divide(_) => print_division(expression, environment),
+        Expression::Number(val) => print!("{}", val),
+        Expression::Variable(key) => {
+            let expr = environment.value_for_key(key);
+            print_expression(expr, environment);
+        }
+    }
+    print!("\n");
+}
+
+fn print_environment(environment: &Environment) {
+    print!("{}\n", environment.key);
+    print_expression(&environment.value, environment);
+}
+
 fn main() {
     let mut expressions = Vec::new();
     expressions.push(Expression::Number(3.0));
@@ -95,6 +162,8 @@ fn main() {
     let multiply = Expression::Multiply(vec![add, Expression::Number(2.0)]);
     let result = evaluate(&multiply, &Environment::new());
     println!("The result is {result}");
+    print_expression(&multiply, &Environment::new());
+    print_environment(&Environment::new());
 }
 
 #[cfg(test)]
@@ -115,7 +184,7 @@ mod tests {
         let values = vec![Expression::Number(2.0), Expression::Number(2.0)];
 
         // act
-        let sum = evaluate_addition(&Expression::Add(values), &Environment::new());
+        let sum = evaluate_addition(&Expression::Add(values), &crate::Environment::new());
 
         // assert
         assert_eq!(sum, 4.0);
@@ -127,7 +196,7 @@ mod tests {
         let values = vec![Expression::Number(2.0), Expression::Number(2.0)];
 
         // act
-        let sum = evaluate_addition(&Expression::Add(values), &Environment::new());
+        let sum = evaluate_addition(&Expression::Add(values), &crate::Environment::new());
 
         // assert
         assert_ne!(sum, 5.0);
@@ -139,7 +208,8 @@ mod tests {
         let values = vec![Expression::Number(2.0), Expression::Number(2.0)];
 
         // act
-        let difference = evaluate_subtraction(&Expression::Subtract(values), &Environment::new());
+        let difference =
+            evaluate_subtraction(&Expression::Subtract(values), &crate::Environment::new());
 
         // assert
         assert_eq!(difference, 0.0);
@@ -154,7 +224,7 @@ mod tests {
             Expression::Number(5.0),
             Expression::Number(evaluate_addition(
                 &Expression::Add(vec![Expression::Number(2.0), Expression::Number(2.0)]),
-                &Environment::new(),
+                &crate::Environment::new(),
             )),
         ];
 
@@ -202,7 +272,7 @@ mod tests {
     #[test]
     fn test_addition_with_variable() {
         // arrange
-        let mut new_env = crate::Environment {
+        let new_env = crate::Environment {
             key: String::from("X"),
             value: crate::Expression::Number(6.0),
         };
@@ -213,10 +283,10 @@ mod tests {
         let add = crate::Expression::Add(vec);
 
         // act
-        let value = crate::evaluate(&add, &Environment::new());
+        let value = crate::evaluate(&add, &new_env);
 
         // assert
-        assert_eq!(value, 7.0)
+        assert_eq!(value, 13.0);
     }
 
     #[test]
